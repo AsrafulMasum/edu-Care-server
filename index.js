@@ -25,7 +25,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 // jwt middleware
@@ -92,15 +92,23 @@ app.post("/users", async (req, res) => {
 // assignment api method
 
 app.get("/assignments", async (req, res) => {
-  const result = await assignmentsCollections.find().toArray()
-  res.send(result)
-})
+  const result = await assignmentsCollections.find().toArray();
+  res.send(result);
+});
 
-app.post("/assignments", async(req, res) => {
-  const assignmentInfo = req.body
-  const result = await assignmentsCollections.insertOne(assignmentInfo)
+app.post("/assignments", async (req, res) => {
+  const assignmentInfo = req.body;
+  const result = await assignmentsCollections.insertOne(assignmentInfo);
+  res.send(result);
+});
+
+app.delete("/assignments/:id", async (req, res) => {
+  const id = req.params.id
+  console.log(id);
+  const query = {_id: new ObjectId(id)}
+  const result = await assignmentsCollections.deleteOne(query)
   res.send(result)
-})
+});
 
 app.listen(port, () => {
   console.log(`server is running on port: ${port}`);
