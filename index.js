@@ -56,6 +56,9 @@ dbConnect();
 const database = client.db("eduCareDB");
 const usersCollections = database.collection("usersDB");
 const assignmentsCollections = database.collection("assignmentsDB");
+const submittedAssignmentCollections = database.collection(
+  "submittedAssignmentDB"
+);
 
 // jwt api method
 app.post("/jwt", (req, res) => {
@@ -125,8 +128,12 @@ app.put("/assignments/:id", async (req, res) => {
       endDate: assignment.endDate,
     },
   };
-  const result = await assignmentsCollections.updateOne(filter, updatedAssignment, options)
-  res.send(result)
+  const result = await assignmentsCollections.updateOne(
+    filter,
+    updatedAssignment,
+    options
+  );
+  res.send(result);
 });
 
 app.delete("/assignments/:id", async (req, res) => {
@@ -134,6 +141,18 @@ app.delete("/assignments/:id", async (req, res) => {
   const query = { _id: new ObjectId(id) };
   const result = await assignmentsCollections.deleteOne(query);
   res.send(result);
+});
+
+// submitted assignment api
+app.get("/submittedAssignments", async (req, res) => {
+  const result = await submittedAssignmentCollections.find().toArray()
+  res.send(result)
+})
+
+app.post("/submittedAssignments", async (req, res) => {
+  const submittedData = req.body;
+  const result = await submittedAssignmentCollections.insertOne(submittedData)
+  res.send(result)
 });
 
 app.listen(port, () => {
