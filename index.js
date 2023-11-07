@@ -102,12 +102,18 @@ app.post("/assignments", async (req, res) => {
   res.send(result);
 });
 
-app.delete("/assignments/:id", async (req, res) => {
-  const id = req.params.id
-  console.log(id);
-  const query = {_id: new ObjectId(id)}
-  const result = await assignmentsCollections.deleteOne(query)
+app.get("/assignments/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await assignmentsCollections.findOne(query)
   res.send(result)
+});
+
+app.delete("/assignments/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await assignmentsCollections.deleteOne(query);
+  res.send(result);
 });
 
 app.listen(port, () => {
