@@ -87,11 +87,11 @@ app.get("/users", async (req, res) => {
 });
 
 app.get("/users/:email", async (req, res) => {
-  const userEmail = req.params.email
-  const query = {email: userEmail}
-  const result = await usersCollections.findOne(query)
-  res.send(result)
-})
+  const userEmail = req.params.email;
+  const query = { email: userEmail };
+  const result = await usersCollections.findOne(query);
+  res.send(result);
+});
 
 app.post("/users", async (req, res) => {
   const user = req.body;
@@ -152,28 +152,38 @@ app.delete("/assignments/:id", async (req, res) => {
 
 // submitted assignment api
 app.get("/submittedAssignments", async (req, res) => {
-  const result = await submittedAssignmentCollections.find().toArray()
-  res.send(result)
-})
+  const result = await submittedAssignmentCollections.find().toArray();
+  res.send(result);
+});
 
-app.get("/submittedAssignments/:email", async(req,res)=>{
-  const submittedBy = req.params.email
-  const query = {submittedEmail: submittedBy}
-  const result = await submittedAssignmentCollections.find(query).toArray()
-  res.send(result)
-})
+app.get("/submittedAssignments/:email", async (req, res) => {
+  const submittedBy = req.params.email;
+  const query = { submittedEmail: submittedBy };
+  const result = await submittedAssignmentCollections.find(query).toArray();
+  res.send(result);
+});
 
 app.post("/submittedAssignments", async (req, res) => {
   const submittedData = req.body;
-  const result = await submittedAssignmentCollections.insertOne(submittedData)
-  res.send(result)
+  const result = await submittedAssignmentCollections.insertOne(submittedData);
+  res.send(result);
 });
 
 app.put("/submittedAssignments/:id", async (req, res) => {
-  const id = req.params.id
-  const viewedAssignmentData = req.body
-  console.log(id, viewedAssignmentData);
-})
+  const id = req.params.id;
+  const viewedAssignmentData = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const options = { upsert: true };
+  const updatedSubmittedAssignment = {
+    $set: {
+      status: viewedAssignmentData?.status,
+      givenMarks: viewedAssignmentData?.givenMarks,
+      feedback: viewedAssignmentData?.feedback
+    }
+  }
+  const result = await submittedAssignmentCollections.updateOne(filter, updatedSubmittedAssignment, options)
+  res.send(result)
+});
 
 app.listen(port, () => {
   console.log(`server is running on port: ${port}`);
