@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://educare-fe496.web.app"],
     credentials: true,
   })
 );
@@ -43,6 +43,7 @@ const verifyCookie = (req, res, next) => {
   });
 };
 
+// mongodb connection
 const dbConnect = async () => {
   try {
     client.connect();
@@ -75,6 +76,11 @@ app.post("/jwt", (req, res) => {
     .send({ success: true });
 });
 
+app.post("/logout", (req, res) => {
+  const user = req.body;
+  res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+});
+
 app.get("/", (req, res) => {
   res.send("server is running data will be appear soon...");
 });
@@ -86,7 +92,7 @@ app.get("/users", async (req, res) => {
   res.send(result);
 });
 
-app.get("/users/:email", async (req, res) => {
+app.get("/users/:email", verifyCookie, async (req, res) => {
   const userEmail = req.params.email;
   const query = { email: userEmail };
   const result = await usersCollections.findOne(query);
@@ -99,27 +105,29 @@ app.post("/users", async (req, res) => {
   res.send(result);
 });
 
-// assignment api method
 
+
+
+// assignment api method
 app.get("/assignments", async (req, res) => {
   const result = await assignmentsCollections.find().toArray();
   res.send(result);
 });
 
-app.post("/assignments", async (req, res) => {
+app.post("/assignments", verifyCookie, async (req, res) => {
   const assignmentInfo = req.body;
   const result = await assignmentsCollections.insertOne(assignmentInfo);
   res.send(result);
 });
 
-app.get("/assignments/:id", async (req, res) => {
+app.get("/assignments/:id", verifyCookie, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await assignmentsCollections.findOne(query);
   res.send(result);
 });
 
-app.put("/assignments/:id", async (req, res) => {
+app.put("/assignments/:id", verifyCookie, async (req, res) => {
   const id = req.params.id;
   const assignment = req.body;
   const filter = { _id: new ObjectId(id) };
@@ -143,33 +151,39 @@ app.put("/assignments/:id", async (req, res) => {
   res.send(result);
 });
 
-app.delete("/assignments/:id", async (req, res) => {
+app.delete("/assignments/:id", verifyCookie, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await assignmentsCollections.deleteOne(query);
   res.send(result);
 });
 
+
+
+
 // submitted assignment api
-app.get("/submittedAssignments", async (req, res) => {
+app.get("/submittedAssignments", verifyCookie, async (req, res) => {
   const result = await submittedAssignmentCollections.find().toArray();
   res.send(result);
 });
 
-app.get("/submittedAssignments/:email", async (req, res) => {
+app.get("/submittedAssignments/:email", verifyCookie, async (req, res) => {
   const submittedBy = req.params.email;
+  if(req.user.email !== submittedBy){
+    return res.status(403).send({message: 'Forbidden Access'})
+  }
   const query = { submittedEmail: submittedBy };
   const result = await submittedAssignmentCollections.find(query).toArray();
   res.send(result);
 });
 
-app.post("/submittedAssignments", async (req, res) => {
+app.post("/submittedAssignments", verifyCookie, async (req, res) => {
   const submittedData = req.body;
   const result = await submittedAssignmentCollections.insertOne(submittedData);
   res.send(result);
 });
 
-app.put("/submittedAssignments/:id", async (req, res) => {
+app.put("/submittedAssignments/:id", verifyCookie, async (req, res) => {
   const id = req.params.id;
   const viewedAssignmentData = req.body;
   const filter = { _id: new ObjectId(id) };
