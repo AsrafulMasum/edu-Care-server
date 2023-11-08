@@ -156,11 +156,24 @@ app.get("/submittedAssignments", async (req, res) => {
   res.send(result)
 })
 
+app.get("/submittedAssignments/:email", async(req,res)=>{
+  const submittedBy = req.params.email
+  const query = {submittedEmail: submittedBy}
+  const result = await submittedAssignmentCollections.find(query).toArray()
+  res.send(result)
+})
+
 app.post("/submittedAssignments", async (req, res) => {
   const submittedData = req.body;
   const result = await submittedAssignmentCollections.insertOne(submittedData)
   res.send(result)
 });
+
+app.put("/submittedAssignments/:id", async (req, res) => {
+  const id = req.params.id
+  const viewedAssignmentData = req.body
+  console.log(id, viewedAssignmentData);
+})
 
 app.listen(port, () => {
   console.log(`server is running on port: ${port}`);
