@@ -105,13 +105,27 @@ app.post("/users", async (req, res) => {
   res.send(result);
 });
 
-
-
-
 // assignment api method
 app.get("/assignments", async (req, res) => {
-  const result = await assignmentsCollections.find().toArray();
+  const page = parseInt(req.query.page);
+  const size = parseInt(req.query.size);
+  const filter = req.query.filter;
+
+  let query = {};
+  if (filter && filter !== "All") {
+    query = { difficulty: filter };
+  }
+  const result = await assignmentsCollections
+    .find(query)
+    .skip(page * size)
+    .limit(size)
+    .toArray();
   res.send(result);
+});
+
+app.get("/assignmentsCount", async (req, res) => {
+  const count = await assignmentsCollections.estimatedDocumentCount();
+  res.send({ count });
 });
 
 app.post("/assignments", verifyCookie, async (req, res) => {
@@ -158,9 +172,6 @@ app.delete("/assignments/:id", verifyCookie, async (req, res) => {
   res.send(result);
 });
 
-
-
-
 // submitted assignment api
 app.get("/submittedAssignments", verifyCookie, async (req, res) => {
   const result = await submittedAssignmentCollections.find().toArray();
@@ -169,8 +180,8 @@ app.get("/submittedAssignments", verifyCookie, async (req, res) => {
 
 app.get("/submittedAssignments/:email", verifyCookie, async (req, res) => {
   const submittedBy = req.params.email;
-  if(req.user.email !== submittedBy){
-    return res.status(403).send({message: 'Forbidden Access'})
+  if (req.user.email !== submittedBy) {
+    return res.status(403).send({ message: "Forbidden Access" });
   }
   const query = { submittedEmail: submittedBy };
   const result = await submittedAssignmentCollections.find(query).toArray();
@@ -192,11 +203,15 @@ app.put("/submittedAssignments/:id", verifyCookie, async (req, res) => {
     $set: {
       status: viewedAssignmentData?.status,
       givenMarks: viewedAssignmentData?.givenMarks,
-      feedback: viewedAssignmentData?.feedback
-    }
-  }
-  const result = await submittedAssignmentCollections.updateOne(filter, updatedSubmittedAssignment, options)
-  res.send(result)
+      feedback: viewedAssignmentData?.feedback,
+    },
+  };
+  const result = await submittedAssignmentCollections.updateOne(
+    filter,
+    updatedSubmittedAssignment,
+    options
+  );
+  res.send(result);
 });
 
 app.listen(port, () => {
