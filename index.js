@@ -65,7 +65,7 @@ const submittedAssignmentCollections = database.collection(
 app.post("/jwt", (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "4h",
+    expiresIn: "1h",
   });
   res
     .cookie("token", token, {
@@ -123,10 +123,16 @@ app.get("/assignments", async (req, res) => {
   res.send(result);
 });
 
-app.get("/assignmentsCount", async (req, res) => {
-  const count = await assignmentsCollections.estimatedDocumentCount();
-  res.send({ count });
-});
+// app.get("/assignmentsCount", async (req, res) => {
+//   const filter = req.query.filter
+//   console.log(filter);
+//   let query = {}
+//   if(filter){
+//     query = { difficulty: filter };
+//   }
+//   const count = await assignmentsCollections.estimatedDocumentCount(query);
+//   res.send({count});
+// });
 
 app.post("/assignments", verifyCookie, async (req, res) => {
   const assignmentInfo = req.body;
@@ -174,7 +180,9 @@ app.delete("/assignments/:id", verifyCookie, async (req, res) => {
 
 // submitted assignment api
 app.get("/submittedAssignments", verifyCookie, async (req, res) => {
-  const result = await submittedAssignmentCollections.find().toArray();
+  const queryStatus = req.query.status
+  const query = {status: queryStatus}
+  const result = await submittedAssignmentCollections.find(query).toArray();
   res.send(result);
 });
 
